@@ -2,6 +2,7 @@ package org.zelator.service;
 
 
 
+
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -23,18 +24,8 @@ public class CustomUserDetailsService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found with email " + email));
-
+                .orElseThrow(() -> new UsernameNotFoundException("Użytkownik z takim emailem nie istnieje."));
         return new CustomUserDetails(user);
-
-//        org.zelator.entity.User user = userRepository.findByEmail(email)
-//                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
-//
-//        User.UserBuilder builder = User.withUsername(user.getEmail())
-//                .password(user.getPassword())
-//                .roles(user.getRole().name());
-//
-//        return builder.build();
     }
 
 }
