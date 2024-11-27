@@ -13,6 +13,6 @@ public class HomeController {
     @GetMapping("/")
     @CrossOrigin
     public String getWelcome(){
-        return "Welcome from REST_Api";
+        return "Welcome from REST_API";
     }
 }

@@ -1,6 +1,8 @@
 package org.zelator.controller;
 
 
+import jakarta.servlet.http.HttpSession;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -8,24 +10,34 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.zelator.dto.LoginRequest;
+import org.zelator.service.UserService;
 
 @RestController
 @CrossOrigin
-@RequestMapping("/user")
+@RequiredArgsConstructor
 public class UserController {
 
-    @GetMapping("/current")
-    public ResponseEntity<String> getCurrentUserMail() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if(authentication != null && authentication.isAuthenticated()) {
-            UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-            return ResponseEntity.ok(userDetails.getUsername());
-        }
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Użytkownik nie zalogowany.");
-    }
 
+    private final UserService userService;
+
+
+    @PostMapping("/login")
+    public ResponseEntity<String> login(@RequestBody LoginRequest loginRequest, HttpSession session) {
+        try {
+            boolean isAuthenticated = userService.authenticate(loginRequest.getEmail(), loginRequest.getPassword());
+
+            System.out.println(isAuthenticated);
+            if(isAuthenticated) {
+                session.setAttribute("user", loginRequest.getEmail());
+                return ResponseEntity.ok("Zalogowano poprawnie.");
+            } else {
+                System.out.println("else");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Niepoprawne hasło lub email.");
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Napotkano nieznany błąd.");
+        }
+    }
 }
