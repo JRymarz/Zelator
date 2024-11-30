@@ -32,4 +32,11 @@ public class UserService {
 
         return true;
     }
+
+
+    public User getByEmail(String email) {
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("Użytkownik z takim emailem nie istnieje."));
+    }
+
 }

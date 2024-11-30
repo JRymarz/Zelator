@@ -8,14 +8,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import org.zelator.dto.LoginRequest;
+import org.zelator.entity.User;
 import org.zelator.service.UserService;
 
 @RestController
-@CrossOrigin
+@CrossOrigin(origins = "http://localhost:3000/", allowCredentials = "true")
 @RequiredArgsConstructor
 public class UserController {
 
@@ -28,16 +28,27 @@ public class UserController {
         try {
             boolean isAuthenticated = userService.authenticate(loginRequest.getEmail(), loginRequest.getPassword());
 
+            User user = userService.getByEmail(loginRequest.getEmail());
+
             System.out.println(isAuthenticated);
             if(isAuthenticated) {
-                session.setAttribute("user", loginRequest.getEmail());
+                session.setAttribute("user", user);
+                System.out.println(user.getEmail());
                 return ResponseEntity.ok("Zalogowano poprawnie.");
             } else {
-                System.out.println("else");
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Niepoprawne hasło lub email.");
             }
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Napotkano nieznany błąd.");
         }
     }
+
+
+    @PostMapping("/logout")
+    public ResponseEntity<String> logout(HttpSession session) {
+        System.out.println("logout");
+        session.invalidate();
+        return ResponseEntity.ok("Wylogowano pomyślnie.");
+    }
+
 }

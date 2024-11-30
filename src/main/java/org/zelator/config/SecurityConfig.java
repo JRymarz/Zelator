@@ -50,11 +50,17 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(Customizer.withDefaults())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/login").permitAll()
-//                        .requestMatchers("/").permitAll()
+                        .requestMatchers("/login", "/", "/logout").permitAll()
+//                        .requestMatchers("/", "/logout").hasAuthority("MainZelator")
                         .anyRequest().authenticated()
                 )
                 .httpBasic(Customizer.withDefaults())
+                .logout()
+                    .logoutUrl("/logout")
+                    .logoutSuccessUrl("/")
+                    .invalidateHttpSession(true)
+                    .clearAuthentication(true)
+                .and()
                 .build();
     }
 
