@@ -7,6 +7,7 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.zelator.dto.UserDto;
 import org.zelator.entity.User;
 import org.zelator.repository.UserRepository;
 
@@ -37,6 +38,23 @@ public class UserService {
     public User getByEmail(String email) {
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("Użytkownik z takim emailem nie istnieje."));
+    }
+
+
+    public void createZelator(UserDto userDto) {
+        if(userRepository.existsByEmail(userDto.getEmail())) {
+            throw new IllegalArgumentException("Użytkownik o podanym adresie email już istnieje.");
+        }
+
+        User user = new User();
+        user.setEmail(userDto.getEmail());
+        user.setPassword(bCryptPasswordEncoder.encode(userDto.getPassword()));
+        user.setRole(User.Role.Zelator);
+        user.setActive(true);
+        user.setFirstName(userDto.getFirstName());
+        user.setLastName(userDto.getLastName());
+
+        userRepository.save(user);
     }
 
 }

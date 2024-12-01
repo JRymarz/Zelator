@@ -14,18 +14,6 @@ import org.zelator.entity.User;
 public class HomeController {
 
 
-    @GetMapping("/")
-    @CrossOrigin
-    public ResponseEntity<?> getHome(HttpSession session){
-        User user = (User) session.getAttribute("user");
 
-        if(user == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Nie jesteś zalogowany.");
-        }
-
-        System.out.println(user.getRole());
-
-        return ResponseEntity.ok(user);
-    }
 
 }

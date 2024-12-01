@@ -51,4 +51,20 @@ public class UserController {
         return ResponseEntity.ok("Wylogowano pomyślnie.");
     }
 
+
+    @GetMapping("/current-user")
+    @CrossOrigin
+    public ResponseEntity<?> getCurrentUser(HttpSession session){
+        User user = (User) session.getAttribute("user");
+
+        if(user == null) {
+            System.out.println("No user");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Nie jesteś zalogowany.");
+        }
+
+        System.out.println(user.getRole());
+
+        return ResponseEntity.ok(user);
+    }
+
 }
