@@ -4,8 +4,11 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
-@Table(name = "Group")
+@Table(name = "rosary_group")
 @Getter
 @Setter
 public class Group {
@@ -25,5 +28,8 @@ public class Group {
     @ManyToOne
     @JoinColumn(name = "intention_id", nullable = false)
     private Intention intention;
+
+    @OneToMany(mappedBy = "group", cascade = CascadeType.ALL)
+    private List<User> members = new ArrayList<>();
 
 }

@@ -25,7 +25,6 @@ public class ZelatorController {
     @PreAuthorize("hasAuthority('MainZelator')")
     @CrossOrigin
     public ResponseEntity<String> createZelator(@RequestBody UserDto userDto) {
-        System.out.println("Wewnatrz create zelator");
         try {
             userService.createZelator(userDto);
             return ResponseEntity.ok("Konto Zelatora zostało utworzone.");

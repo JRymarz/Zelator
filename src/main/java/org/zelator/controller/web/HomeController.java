@@ -1,4 +1,4 @@
-package org.zelator.controller;
+package org.zelator.controller.web;
 
 
 import jakarta.servlet.http.HttpSession;
