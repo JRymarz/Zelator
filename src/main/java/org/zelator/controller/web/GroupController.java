@@ -1,14 +1,13 @@
 package org.zelator.controller.web;
 
 
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.zelator.dto.GroupDetailsDto;
 import org.zelator.dto.GroupRequest;
 import org.zelator.entity.Intention;
 import org.zelator.entity.User;
@@ -48,5 +47,23 @@ public class GroupController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Nie udało się utworzyć nowej róży.");
         }
     }
+
+
+    @GetMapping("/my-rose")
+    @CrossOrigin
+    public ResponseEntity<?> getMyRoseDetails(HttpSession session) {
+        User user = (User) session.getAttribute("user");
+
+        if(user == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Nie jesteś zalogowany.");
+        } else if (user.getGroup() == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Nie masz własnej grupy.");
+        }
+
+        GroupDetailsDto roseDetails = groupService.getGroupDetails(user.getGroup().getId());
+        System.out.println(roseDetails);
+        return ResponseEntity.ok(roseDetails);
+    }
+
 
 }
