@@ -52,7 +52,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/login", "/current-user", "/logout").permitAll()
                         .requestMatchers("/create-zelator").hasAuthority("MainZelator")
-                        .requestMatchers("/create-user", "/groups/create", "/intentions").hasAuthority("Zelator")
+                        .requestMatchers("/create-user", "/groups/create", "/intentions", "/members/**").hasAuthority("Zelator")
                         .anyRequest().authenticated()
                 )
                 .httpBasic(Customizer.withDefaults())
@@ -79,7 +79,7 @@ public class SecurityConfig {
     CorsConfigurationSource configurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(List.of("http://localhost:3000"));
-        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE"));
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH"));
         configuration.setAllowCredentials(true);
         configuration.addAllowedHeader("*");
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

@@ -4,6 +4,8 @@ package org.zelator.controller.web;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -15,9 +17,12 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import org.zelator.dto.LoginRequest;
+import org.zelator.dto.UserCookieDto;
 import org.zelator.dto.UserDto;
 import org.zelator.entity.User;
 import org.zelator.service.UserService;
+
+import java.util.List;
 
 @RestController
 @CrossOrigin(origins = "http://localhost:3000/", allowCredentials = "true")
@@ -79,9 +84,24 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Nie jesteś zalogowany.");
         }
 
-        System.out.println(user.getRole());
+        UserCookieDto userCookieDto = new UserCookieDto();
+        userCookieDto.setId(user.getId());
+        userCookieDto.setRole(user.getRole().name());
+        userCookieDto.setEmail(user.getEmail());
+        userCookieDto.setFirstName(user.getFirstName());
+        userCookieDto.setLastName(user.getLastName());
 
-        return ResponseEntity.ok(user);
+        if(user.getGroup() != null) {
+            UserCookieDto.GroupDto groupDto = new UserCookieDto.GroupDto();
+            groupDto.setId(user.getGroup().getId());
+            groupDto.setName(user.getGroup().getName());
+
+            userCookieDto.setGroup(groupDto);
+        }
+
+        System.out.println(userCookieDto.getRole());
+
+        return ResponseEntity.ok(userCookieDto);
     }
 
 
@@ -94,6 +114,53 @@ public class UserController {
             return ResponseEntity.ok("Konto użytkownika zostało utworzone.");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Nie udało się utworzyć nowego konta.");
+        }
+    }
+
+
+    @GetMapping("/members")
+    @CrossOrigin
+    public ResponseEntity<Page<UserCookieDto>> getMembers(
+            @RequestParam(required = false) Long groupId,
+            @RequestParam(required = false) Boolean hasGroup,
+            @RequestParam(required = false) String firstName,
+            @RequestParam(required = false) String lastName,
+            Pageable pageable) {
+
+        Page<User> members = userService.getFilteredMembers(pageable, groupId, hasGroup, firstName, lastName);
+
+        Page<UserCookieDto> memberDtos = members.map(user -> {
+            UserCookieDto userCookieDto = new UserCookieDto();
+            userCookieDto.setId(user.getId());
+            userCookieDto.setEmail(user.getEmail());
+            userCookieDto.setRole(user.getRole().name());
+            userCookieDto.setFirstName(user.getFirstName());
+            userCookieDto.setLastName(user.getLastName());
+
+            if(user.getGroup() != null) {
+                UserCookieDto.GroupDto groupDto = new UserCookieDto.GroupDto();
+                groupDto.setName(user.getGroup().getName());
+                groupDto.setId(user.getGroup().getId());
+
+                userCookieDto.setGroup(groupDto);
+            }
+
+            return userCookieDto;
+        });
+
+        return ResponseEntity.ok(memberDtos);
+    }
+
+
+    @PatchMapping("/members/{memberId}/assign")
+    @CrossOrigin
+    public ResponseEntity<?> assignMemberToGroup(@PathVariable Long memberId, @RequestBody Long groupId) {
+        System.out.println("MemberId: " + memberId + ", groupId: " + groupId);
+        try {
+            userService.assignMemberToGroup(memberId, groupId);
+            return ResponseEntity.ok("Członek został przypisany do grupy.");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Błąd przypisywania członka do grupy.");
         }
     }
 

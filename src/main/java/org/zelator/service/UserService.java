@@ -3,6 +3,9 @@ package org.zelator.service;
 
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -10,9 +13,13 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.zelator.dto.UserDto;
+import org.zelator.entity.Group;
 import org.zelator.entity.User;
+import org.zelator.repository.GroupRepository;
 import org.zelator.repository.UserRepository;
+import org.zelator.specification.UserSpecifications;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -22,6 +29,7 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
+    private final GroupRepository groupRepository;
 
 
     public boolean authenticate(String email, String password) {
@@ -92,6 +100,39 @@ public class UserService {
         } else {
             throw new IllegalStateException("Błąd w uwierzytelnieniu.");
         }
+    }
+
+
+    public Page<User> getFilteredMembers(Pageable pageable, Long groupId, Boolean hasGroup, String firstName, String lastName) {
+        Specification<User> spec = Specification.where(UserSpecifications.isMember());
+
+        if(groupId != null) {
+            spec = spec.and(UserSpecifications.belongsToGroup(groupId));
+        }
+        if(hasGroup != null) {
+            spec = spec.and(UserSpecifications.hasGroup(hasGroup));
+        }
+        if(firstName != null && !firstName.isEmpty()) {
+            spec = spec.and(UserSpecifications.hasFirstName(firstName));
+        }
+        if(lastName != null && !lastName.isEmpty()) {
+            spec = spec.and(UserSpecifications.hasLastName(lastName));
+        }
+
+        return userRepository.findAll(spec, pageable);
+    }
+
+
+    public void assignMemberToGroup(Long memberId, Long groupId) {
+        User user = userRepository.findById(memberId)
+                .orElseThrow(() -> new IllegalArgumentException("Użytkownik nie istnieje."));
+
+        Group group = groupRepository.findById(groupId)
+                .orElseThrow(() -> new IllegalArgumentException("Grupa nie istnieje."));
+
+        user.setGroup(group);
+
+        userRepository.save(user);
     }
 
 }
