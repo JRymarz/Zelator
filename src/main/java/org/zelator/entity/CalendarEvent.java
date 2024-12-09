@@ -36,11 +36,24 @@ public class CalendarEvent {
     @JoinColumn(name = "creator_id", nullable = false)
     private User creator;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 50)
+    private State state;
+
+    @OneToOne(mappedBy = "calendarEvent")
+    private MysteryChangeTask mysteryChangeTask;
+
 
     public enum EventType{
         MYSTERYCHANGE,
         MASS,
         PRAYER,
         OTHER
+    }
+
+    public enum State{
+        scheduled,
+        completed,
+        undone
     }
 }

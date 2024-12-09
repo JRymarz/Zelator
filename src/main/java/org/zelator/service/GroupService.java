@@ -4,11 +4,12 @@ package org.zelator.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.zelator.dto.GroupDetailsDto;
-import org.zelator.dto.MysteryDto;
 import org.zelator.entity.Group;
 import org.zelator.entity.Intention;
+import org.zelator.entity.Mystery;
 import org.zelator.entity.User;
 import org.zelator.repository.GroupRepository;
+import org.zelator.repository.MysteryRepository;
 import org.zelator.repository.UserRepository;
 
 import java.util.List;
@@ -23,6 +24,8 @@ public class GroupService {
     private final GroupRepository groupRepository;
 
     private final UserRepository userRepository;
+
+    private final MysteryRepository mysteryRepository;
 
 
     public Group createGroup(String name, User leader, Intention intention) {
@@ -64,16 +67,14 @@ public class GroupService {
         User leader = userRepository.findById(group.getLeader().getId())
                 .orElseThrow(() -> new IllegalArgumentException("Taki użytkownik nie istnieje."));
 
-        MysteryDto leaderMyseteryDto = new MysteryDto();
+        Mystery leaderMystery = new Mystery();
         if(leader.getMystery() != null) {
-            leaderMyseteryDto.setId(leader.getMystery().getId());
-            leaderMyseteryDto.setName(leader.getMystery().getName());
-            leaderMyseteryDto.setMeditation(leader.getMystery().getMeditation());
+            leaderMystery = leader.getMystery();
         }
 
         GroupDetailsDto.MemberDetailsDto leaderDto = new GroupDetailsDto.MemberDetailsDto();
         leaderDto.setRole(leader.getRole().name());
-        leaderDto.setMystery(leaderMyseteryDto);
+        leaderDto.setMystery(leaderMystery);
         leaderDto.setEmail(leader.getEmail());
         leaderDto.setFirstName(leader.getFirstName());
         leaderDto.setId(leader.getId());
@@ -90,11 +91,9 @@ public class GroupService {
                     memberDto.setId(member.getId());
                     memberDto.setFirstName(member.getFirstName());
 
-                    MysteryDto memberMysteryDto = new MysteryDto();
-                    if(memberDto.getMystery() != null) {
-                        memberMysteryDto.setMeditation(member.getMystery().getMeditation());
-                        memberMysteryDto.setName(member.getMystery().getName());
-                        memberMysteryDto.setId(member.getMystery().getId());
+                    Mystery memberMysteryDto = new Mystery();
+                    if(member.getMystery() != null) {
+                        memberMysteryDto = member.getMystery();
                     }
 
                     memberDto.setMystery(memberMysteryDto);

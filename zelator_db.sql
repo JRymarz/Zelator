@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Dec 07, 2024 at 08:03 PM
+-- Generation Time: Dec 09, 2024 at 03:35 PM
 -- Wersja serwera: 10.4.32-MariaDB
 -- Wersja PHP: 8.2.12
 
@@ -33,7 +33,8 @@ CREATE TABLE `calendar_event` (
   `event_date` datetime NOT NULL,
   `event_type` enum('MYSTERYCHANGE','MASS','PRAYER','OTHER') NOT NULL,
   `group_id` bigint(20) DEFAULT NULL,
-  `creator_id` bigint(20) NOT NULL
+  `creator_id` bigint(20) NOT NULL,
+  `state` enum('scheduled','completed','undone') NOT NULL DEFAULT 'scheduled'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -106,6 +107,60 @@ CREATE TABLE `mystery` (
   `meditation` text NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Dumping data for table `mystery`
+--
+
+INSERT INTO `mystery` (`id`, `name`, `meditation`) VALUES
+(1, 'Zwiastowanie Najświętszej Maryi Pannie', 'Rozważamy moment, gdy Archanioł Gabriel zwiastował Maryi, że zostanie Matką Bożą.'),
+(2, 'Nawiedzenie św. Elżbiety', 'Rozważamy spotkanie Maryi z Elżbietą, która napełniona Duchem Świętym poznała, że Maryja nosi w łonie Zbawiciela.'),
+(3, 'Narodzenie Pana Jezusa', 'Rozważamy narodziny Jezusa Chrystusa w ubogiej stajence w Betlejem.'),
+(4, 'Ofiarowanie Jezusa w świątyni', 'Rozważamy ofiarowanie Jezusa w świątyni zgodnie z prawem Mojżeszowym.'),
+(5, 'Odnalezienie Jezusa w świątyni', 'Rozważamy moment, gdy Maryja i Józef odnaleźli dwunastoletniego Jezusa nauczającego w świątyni.'),
+(6, 'Modlitwa Jezusa w Ogrójcu', 'Rozważamy mękę Jezusa w Ogrójcu, gdy modlił się i przyjął wolę Ojca.'),
+(7, 'Biczowanie Pana Jezusa', 'Rozważamy cierpienie Jezusa, który był biczowany za nasze grzechy.'),
+(8, 'Cierniem ukoronowanie Pana Jezusa', 'Rozważamy mękę Jezusa, gdy został upokorzony i ukoronowany cierniami.'),
+(9, 'Dźwiganie krzyża na Kalwarię', 'Rozważamy drogę Jezusa na Golgotę, gdzie dźwigał krzyż na naszych barkach.'),
+(10, 'Ukrzyżowanie i śmierć Pana Jezusa', 'Rozważamy moment, gdy Jezus oddał życie za nasze grzechy na krzyżu.'),
+(11, 'Zmartwychwstanie Pana Jezusa', 'Rozważamy chwalebne zmartwychwstanie Jezusa, które przyniosło zbawienie światu.'),
+(12, 'Wniebowstąpienie Pana Jezusa', 'Rozważamy wniebowstąpienie Jezusa do Ojca, gdzie przygotowuje miejsce dla swoich wiernych.'),
+(13, 'Zesłanie Ducha Świętego', 'Rozważamy moment, gdy Duch Święty zstąpił na Apostołów i Maryję w Wieczerniku.'),
+(14, 'Wniebowzięcie Najświętszej Maryi Panny', 'Rozważamy, jak Maryja została wzięta do nieba z ciałem i duszą.'),
+(15, 'Ukoronowanie Maryi na Królową Nieba i Ziemi', 'Rozważamy koronację Maryi jako Królowej nieba i ziemi.'),
+(16, 'Chrzest Pana Jezusa w Jordanie', 'Rozważamy chrzest Jezusa przez Jana Chrzciciela, który ukazał Go jako Syna Bożego.'),
+(17, 'Objawienie Jezusa na weselu w Kanie Galilejskiej', 'Rozważamy pierwszy cud Jezusa, gdy przemienił wodę w wino na weselu w Kanie.'),
+(18, 'Głoszenie Królestwa Bożego i wezwanie do nawrócenia', 'Rozważamy nauczanie Jezusa o Królestwie Bożym i wezwaniu do pokuty.'),
+(19, 'Przemienienie na górze Tabor', 'Rozważamy przemienienie Jezusa, gdy objawił swoją chwałę przed wybranymi Apostołami.'),
+(20, 'Ustanowienie Eucharystii', 'Rozważamy ustanowienie Eucharystii jako sakramentu miłości i pamiątki męki Chrystusa.');
+
+-- --------------------------------------------------------
+
+--
+-- Struktura tabeli dla tabeli `mystery_change_task`
+--
+
+CREATE TABLE `mystery_change_task` (
+  `id` bigint(20) NOT NULL,
+  `group_id` bigint(20) NOT NULL,
+  `intention_id` bigint(20) NOT NULL,
+  `state` enum('PENDING','EXECUTED','CANCELLED') NOT NULL DEFAULT 'PENDING',
+  `event_date` datetime NOT NULL,
+  `calendar_event_id` bigint(20) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Struktura tabeli dla tabeli `mystery_change_task_member`
+--
+
+CREATE TABLE `mystery_change_task_member` (
+  `id` bigint(20) NOT NULL,
+  `mystery_change_task_id` bigint(20) NOT NULL,
+  `user_id` bigint(20) NOT NULL,
+  `mystery_id` bigint(20) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
 -- --------------------------------------------------------
 
 --
@@ -164,11 +219,12 @@ CREATE TABLE `user` (
 
 INSERT INTO `user` (`id`, `first_name`, `last_name`, `password`, `email`, `role`, `active`, `group_id`, `mystery_id`) VALUES
 (1, 'Marek', 'Nowak', '$2a$12$PEtWsT9935qD7TjoO8jGzuwgr/acJuga8sDZScR2InGE6F.8dZmba', 'mareknowak@mail.com', 'MainZelator', 1, NULL, NULL),
-(3, 'Anna', 'Kowalska', '$2a$10$tfyhxw2Gbi.fWP9ELdalWO2Op0tqzeuRegOcEvESyf4K17t04fMda', 'annakowalski@mail.com', 'Zelator', 1, 1, NULL),
-(11, 'Maria', 'Wiśniewska', '$2a$10$kcZ4xDiM5LMpmdCGpkqVJu1SjpKKIx8BngCMP1cqxB7leY.I62loG', 'mariawisniewska@mail.com', 'Member', 1, NULL, NULL),
-(13, 'Tomasz', 'Zieliński', '$2a$10$k.1C8LIU7.g0eICcSkOgx.VhWu.rJKkeJYkm9NrMFslvHod0UGxJ2', 'tomaszzielinski@mail.com', 'Member', 1, NULL, NULL),
+(3, 'Anna', 'Kowalska', '$2a$10$tfyhxw2Gbi.fWP9ELdalWO2Op0tqzeuRegOcEvESyf4K17t04fMda', 'annakowalski@mail.com', 'Zelator', 1, 1, 1),
+(11, 'Maria', 'Wiśniewska', '$2a$10$kcZ4xDiM5LMpmdCGpkqVJu1SjpKKIx8BngCMP1cqxB7leY.I62loG', 'mariawisniewska@mail.com', 'Member', 1, 1, 6),
+(13, 'Tomasz', 'Zieliński', '$2a$10$k.1C8LIU7.g0eICcSkOgx.VhWu.rJKkeJYkm9NrMFslvHod0UGxJ2', 'tomaszzielinski@mail.com', 'Member', 1, 1, NULL),
 (14, 'Piotr', 'Lewandowski', '$2a$10$wYAJgNP9MTdLDRNiBiYiPOHX3GspVg4VUUFzM068DjjeNrn4Mfdiu', 'piotrlewandowski@mail.com', 'Member', 1, NULL, NULL),
-(15, 'Katarzyna', 'Kamińska', '$2a$10$i0N2TGtRKXdcACdYe6u3i.L5Ht2gCVHOrQWnNaGfQ.Ts5Uw3Ei6.m', 'katarzynakaminska@mail.com', 'Zelator', 1, NULL, NULL);
+(15, 'Katarzyna', 'Kamińska', '$2a$10$i0N2TGtRKXdcACdYe6u3i.L5Ht2gCVHOrQWnNaGfQ.Ts5Uw3Ei6.m', 'katarzynakaminska@mail.com', 'Zelator', 1, NULL, NULL),
+(18, 'Monika', 'Dąbrowska', '$2a$10$BfIxLhoAhUpYI.n.dkj1g.HhQ0e/c59aPT2E6S7y85qfVQzDxI8IC', 'monikadabrowska@mail.com', 'Zelator', 1, NULL, NULL);
 
 --
 -- Indeksy dla zrzutów tabel
@@ -209,6 +265,24 @@ ALTER TABLE `mass_request`
 --
 ALTER TABLE `mystery`
   ADD PRIMARY KEY (`id`);
+
+--
+-- Indeksy dla tabeli `mystery_change_task`
+--
+ALTER TABLE `mystery_change_task`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `group_id` (`group_id`),
+  ADD KEY `intention_id` (`intention_id`),
+  ADD KEY `FK_calendar_event` (`calendar_event_id`);
+
+--
+-- Indeksy dla tabeli `mystery_change_task_member`
+--
+ALTER TABLE `mystery_change_task_member`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `mystery_change_task_id` (`mystery_change_task_id`),
+  ADD KEY `user_id` (`user_id`),
+  ADD KEY `mystery_id` (`mystery_id`);
 
 --
 -- Indeksy dla tabeli `prayer_status`
@@ -267,6 +341,18 @@ ALTER TABLE `mass_request`
 -- AUTO_INCREMENT for table `mystery`
 --
 ALTER TABLE `mystery`
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
+
+--
+-- AUTO_INCREMENT for table `mystery_change_task`
+--
+ALTER TABLE `mystery_change_task`
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `mystery_change_task_member`
+--
+ALTER TABLE `mystery_change_task_member`
   MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
 
 --
@@ -285,7 +371,7 @@ ALTER TABLE `rosary_group`
 -- AUTO_INCREMENT for table `user`
 --
 ALTER TABLE `user`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
 
 --
 -- Constraints for dumped tables
@@ -311,6 +397,22 @@ ALTER TABLE `chat`
 --
 ALTER TABLE `mass_request`
   ADD CONSTRAINT `mass_request_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`);
+
+--
+-- Constraints for table `mystery_change_task`
+--
+ALTER TABLE `mystery_change_task`
+  ADD CONSTRAINT `FK_calendar_event` FOREIGN KEY (`calendar_event_id`) REFERENCES `calendar_event` (`id`),
+  ADD CONSTRAINT `mystery_change_task_ibfk_1` FOREIGN KEY (`group_id`) REFERENCES `rosary_group` (`id`),
+  ADD CONSTRAINT `mystery_change_task_ibfk_2` FOREIGN KEY (`intention_id`) REFERENCES `intention` (`id`);
+
+--
+-- Constraints for table `mystery_change_task_member`
+--
+ALTER TABLE `mystery_change_task_member`
+  ADD CONSTRAINT `mystery_change_task_member_ibfk_1` FOREIGN KEY (`mystery_change_task_id`) REFERENCES `mystery_change_task` (`id`),
+  ADD CONSTRAINT `mystery_change_task_member_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`),
+  ADD CONSTRAINT `mystery_change_task_member_ibfk_3` FOREIGN KEY (`mystery_id`) REFERENCES `mystery` (`id`);
 
 --
 -- Constraints for table `prayer_status`

@@ -14,8 +14,10 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.zelator.dto.UserDto;
 import org.zelator.entity.Group;
+import org.zelator.entity.Mystery;
 import org.zelator.entity.User;
 import org.zelator.repository.GroupRepository;
+import org.zelator.repository.MysteryRepository;
 import org.zelator.repository.UserRepository;
 import org.zelator.specification.UserSpecifications;
 
@@ -30,6 +32,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final GroupRepository groupRepository;
+    private final MysteryRepository mysteryRepository;
 
 
     public boolean authenticate(String email, String password) {
@@ -131,6 +134,32 @@ public class UserService {
                 .orElseThrow(() -> new IllegalArgumentException("Grupa nie istnieje."));
 
         user.setGroup(group);
+
+        userRepository.save(user);
+    }
+
+
+    public void assignMystery(Long memberId, Long mysteryId) {
+        User member = userRepository.findById(memberId)
+                .orElseThrow(() -> new IllegalArgumentException("Nie znaleziono użytkownika."));
+
+        Mystery mystery = mysteryRepository.findById(mysteryId)
+                .orElseThrow(() -> new IllegalArgumentException("Nie znaleziono tajemnicy."));
+
+        member.setMystery(mystery);
+        userRepository.save(member);
+    }
+
+
+    public void removeMember(Long memberId) {
+        User user = userRepository.findById(memberId)
+                .orElseThrow(() -> new IllegalArgumentException("Użytkownik nie został znaleziony."));
+
+        if(user.getGroup().getLeader().getId() == user.getId())
+            throw new IllegalArgumentException("Zelator nie może usunąc siebie z róży.");
+
+        user.setGroup(null);
+        user.setMystery(null);
 
         userRepository.save(user);
     }

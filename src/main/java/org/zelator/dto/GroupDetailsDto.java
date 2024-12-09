@@ -3,6 +3,7 @@ package org.zelator.dto;
 
 import lombok.Data;
 import org.zelator.entity.Intention;
+import org.zelator.entity.Mystery;
 
 import java.util.List;
 
@@ -25,7 +26,7 @@ public class GroupDetailsDto {
         private String lastName;
         private String email;
         private String role;
-        private MysteryDto mystery;
+        private Mystery mystery;
     }
 
 }

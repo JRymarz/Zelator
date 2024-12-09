@@ -164,4 +164,12 @@ public class UserController {
         }
     }
 
+
+    @DeleteMapping("/members/{memberId}/remove")
+    @CrossOrigin
+    public ResponseEntity<Void> removeMember(@PathVariable Long memberId) {
+        userService.removeMember(memberId);
+        return ResponseEntity.noContent().build();
+    }
+
 }

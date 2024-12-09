@@ -15,6 +15,8 @@ import org.zelator.service.GroupService;
 import org.zelator.service.IntentionService;
 import org.zelator.service.UserService;
 
+import java.util.List;
+
 @RestController
 @RequiredArgsConstructor
 @CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
@@ -61,7 +63,7 @@ public class GroupController {
         }
 
         GroupDetailsDto roseDetails = groupService.getGroupDetails(user.getGroup().getId());
-        System.out.println(roseDetails);
+
         return ResponseEntity.ok(roseDetails);
     }
 
