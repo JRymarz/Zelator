@@ -41,4 +41,12 @@ public class MysteryController {
         }
     }
 
+
+    @GetMapping("/mysteries")
+    @CrossOrigin
+    public ResponseEntity<List<Mystery>> getAllMysteries() {
+        List<Mystery> mysteries = mysteryService.getAllMysteries();
+        return ResponseEntity.ok(mysteries);
+    }
+
 }

@@ -36,4 +36,9 @@ public class MysteryService {
                 .collect(Collectors.toList());
     }
 
+
+    public List<Mystery> getAllMysteries() {
+        return mysteryRepository.findAll();
+    }
+
 }
