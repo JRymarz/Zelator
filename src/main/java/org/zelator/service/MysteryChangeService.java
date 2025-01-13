@@ -1,16 +1,14 @@
 package org.zelator.service;
 
 
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.zelator.entity.*;
 import org.zelator.repository.*;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -28,7 +26,8 @@ public class MysteryChangeService {
     public void planMysteryChange(Long groupId,
                                   Long intentionId,
                                   LocalDateTime eventDate,
-                                  boolean autoAssign) {
+                                  boolean autoAssign,
+                                  Map<Long, Long> memberMysteries) {
 
         Group group = groupRepository.findById(groupId)
                 .orElseThrow(() -> new IllegalArgumentException("Nie znaleziono grupy."));
@@ -41,22 +40,15 @@ public class MysteryChangeService {
         task.setIntention(intention);
         task.setState(MysteryChangeTask.State.PENDING);
         task.setEventDate(eventDate);
+        task.setTaskMembers(new ArrayList<>());
+
+        List<User> members = userRepository.findByGroupId(groupId)
+                .orElseThrow(() -> new EntityNotFoundException("Nie znialeziono członków grupy."));
 
         if(autoAssign) {
-            List<User> members = userRepository.findByGroupId(group.getId())
-                    .orElseThrow(() -> new IllegalArgumentException("Nie znaleziono użytkowników."));
-
-            List<Mystery> availableMysteries = mysteryRepository.findAll();
-
-            List<Mystery> assignedMysteries = assignMysteriesToMembers(members, availableMysteries);
-
-            for(int i = 0; i < members.size(); i++) {
-                MysteryChangeTaskMember taskMember = new MysteryChangeTaskMember();
-                taskMember.setMysteryChangeTask(task);
-                taskMember.setUser(members.get(i));
-                taskMember.setMystery(assignedMysteries.get(i));
-                task.getTaskMembers().add(taskMember);
-            }
+            assignMysteriesAutomatically(task, members);
+        } else {
+            assignMysteriesManually(task, members, memberMysteries);
         }
 
         CalendarEvent event = new CalendarEvent();
@@ -66,21 +58,33 @@ public class MysteryChangeService {
         event.setGroup(group);
         event.setCreator(group.getLeader());
         event.setState(CalendarEvent.State.scheduled);
-        event.setMysteryChangeTask(task);
 
+        event.setMysteryChangeTask(task);
         calendarEventRepository.save(event);
+
+        task.setCalendarEvent(event);
         mysteryChangeTaskRepository.save(task);
     }
 
 
-    private List<Mystery> assignMysteriesToMembers(List<User> members, List<Mystery> availableMysteries) {
-        Collections.shuffle(availableMysteries);
-        List<Mystery> assignedMysteries = new ArrayList<>();
-        for(int i = 0; i < members.size(); i++) {
-            assignedMysteries.add(availableMysteries.get(i));
-        }
+    private void assignMysteriesAutomatically(MysteryChangeTask task, List<User> members) {
+        List<Mystery> mysteries = mysteryRepository.findAll();
+        System.out.println("TODO automatyczne przypisanie tajemnic");
+    }
 
-        return assignedMysteries;
+
+    private void assignMysteriesManually(MysteryChangeTask task, List<User> members, Map<Long, Long> memberMysteries) {
+        for(User member : members) {
+            if(memberMysteries.containsKey(member.getId())) {
+                MysteryChangeTaskMember taskMember = new MysteryChangeTaskMember();
+                taskMember.setMysteryChangeTask(task);
+                taskMember.setUser(member);
+                Mystery mystery = mysteryRepository.findById(memberMysteries.get(member.getId()))
+                        .orElseThrow(() -> new EntityNotFoundException("Nie znaleziono tajemnicy."));
+                taskMember.setMystery(mystery);
+                task.getTaskMembers().add(taskMember);
+            }
+        }
     }
 
 

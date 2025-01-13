@@ -40,7 +40,7 @@ public class CalendarEvent {
     @Column(nullable = false, length = 50)
     private State state;
 
-    @OneToOne(mappedBy = "calendarEvent")
+    @OneToOne(mappedBy = "calendarEvent", cascade = CascadeType.ALL)
     private MysteryChangeTask mysteryChangeTask;
 
 
