@@ -34,7 +34,7 @@ public class MysteryChangeTask {
     @Column(nullable = false)
     private LocalDateTime eventDate;
 
-    @OneToMany(mappedBy = "mysteryChangeTask", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "mysteryChangeTask", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<MysteryChangeTaskMember> taskMembers;
 
     @OneToOne

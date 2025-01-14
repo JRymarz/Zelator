@@ -2,13 +2,16 @@ package org.zelator.service;
 
 
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.hibernate.Hibernate;
 import org.springframework.stereotype.Service;
 import org.zelator.entity.*;
 import org.zelator.repository.*;
 
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -21,6 +24,7 @@ public class MysteryChangeService {
     private final CalendarEventRepository calendarEventRepository;
     private final GroupRepository groupRepository;
     private final IntentionRepository intentionRepository;
+    private final MysteryChangeTaskMemberRepository mysteryChangeTaskMemberRepository;
 
 
     public void planMysteryChange(Long groupId,
@@ -88,22 +92,50 @@ public class MysteryChangeService {
     }
 
 
-    public void updateMysteryForMember(Long taskId, Long memberId, Long newMysteryId) {
-        MysteryChangeTask task = mysteryChangeTaskRepository.findById(taskId)
-                .orElseThrow(() -> new IllegalArgumentException("Nie znaleziono zmiany tajemnic."));
+    @Transactional
+    public void performMysteryChange(MysteryChangeTask task) {
+        System.out.println("Wykonuje zmiane tajemnic dla grupy " + task.getGroup().getId());
 
-        User member = userRepository.findById(memberId)
-                .orElseThrow(() -> new IllegalArgumentException("Nie znaleziono użytkownika."));
+        Group group = task.getGroup();
+        Intention intention = task.getIntention();
+        group.setIntention(intention);
 
-        Mystery newMystery = mysteryRepository.findById(newMysteryId)
-                .orElseThrow(() -> new IllegalArgumentException("Nie znaleziono tajemnicy."));
+        CalendarEvent calendarEvent = task.getCalendarEvent();
+        if(calendarEvent != null) {
+            calendarEvent.setState(CalendarEvent.State.completed);
+            System.out.println("Zmieniono stan calendarEvent");
+        } else
+            System.err.println("Nie znaleziono calendarEvent.");
 
-        MysteryChangeTaskMember taskMember = task.getTaskMembers().stream()
-                .filter(tm -> tm.getUser().equals(member))
-                .findFirst().orElseThrow(() -> new IllegalArgumentException("Nie znaleziono użytkownika."));
-        taskMember.setMystery(newMystery);
+        List<MysteryChangeTaskMember> taskMembers = task.getTaskMembers();
+        for(MysteryChangeTaskMember taskMember : taskMembers) {
+            User user = taskMember.getUser();
+            Mystery mystery = taskMember.getMystery();
 
-        mysteryChangeTaskRepository.save(task);
+            if(user != null && mystery != null) {
+                user.setMystery(mystery);
+                System.out.println("Przypisano mystery userowi.");
+            } else
+                System.err.println("Brakuje danych.");
+        }
+
+        try{
+            groupRepository.save(group);
+
+            if(calendarEvent != null) {
+                calendarEventRepository.save(calendarEvent);
+            }
+
+            userRepository.saveAll(
+                    taskMembers.stream()
+                            .map(MysteryChangeTaskMember::getUser)
+                            .collect(Collectors.toList())
+            );
+            System.out.println("Wszystkie zmiany zapisane w bazie.");
+        } catch (Exception e) {
+            System.err.println("Bład podczas zapisywania w bazie.");
+            throw new RuntimeException("Nie udało się zapisać zmian.");
+        }
     }
 
 
