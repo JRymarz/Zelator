@@ -72,8 +72,32 @@ public class MysteryChangeService {
 
 
     private void assignMysteriesAutomatically(MysteryChangeTask task, List<User> members) {
-        List<Mystery> mysteries = mysteryRepository.findAll();
-        System.out.println("TODO automatyczne przypisanie tajemnic");
+        List<Mystery> availableMysteries = mysteryRepository.findAll();
+        if(availableMysteries.size() != 20)
+            throw new IllegalArgumentException("Błędna ilość tajemnic.");
+
+        Collections.shuffle(availableMysteries);
+
+        Set<Mystery> usedMysteries = new HashSet<>();
+
+        for(User member : members) {
+            Optional<Mystery> availableMystery = availableMysteries.stream()
+                    .filter(m -> !m.equals(member.getMystery()) && !usedMysteries.contains(m))
+                    .findFirst();
+
+            if(availableMystery.isPresent()) {
+                Mystery assignedMystery = availableMystery.get();
+                MysteryChangeTaskMember taskMember = new MysteryChangeTaskMember();
+                taskMember.setMysteryChangeTask(task);
+                taskMember.setUser(member);
+                taskMember.setMystery(assignedMystery);
+
+                usedMysteries.add(assignedMystery);
+                task.getTaskMembers().add(taskMember);
+            } else {
+                System.err.println("Brak dostępnych tajemnic.");
+            }
+        }
     }
 
 
