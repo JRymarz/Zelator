@@ -50,7 +50,7 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(Customizer.withDefaults())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/login", "/current-user", "/logout").permitAll()
+                        .requestMatchers("/login", "/current-user", "/logout", "/mob/**").permitAll()
                         .requestMatchers("/create-zelator").hasAuthority("MainZelator")
                         .requestMatchers("/create-user", "/groups/create", "/intentions",
                                 "/members/**", "/my-rose", "/roses/**",

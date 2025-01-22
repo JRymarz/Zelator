@@ -1,6 +1,7 @@
 package org.zelator.service;
 
 
+import jakarta.persistence.EntityNotFoundException;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -162,6 +163,12 @@ public class UserService {
         user.setMystery(null);
 
         userRepository.save(user);
+    }
+
+
+    public User getById(Long id) {
+        return userRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Nie znaleziono użytkownika."));
     }
 
 }
