@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Dec 20, 2024 at 05:40 PM
+-- Generation Time: Sty 23, 2025 at 07:37 PM
 -- Wersja serwera: 10.4.32-MariaDB
 -- Wersja PHP: 8.2.12
 
@@ -36,6 +36,16 @@ CREATE TABLE `calendar_event` (
   `creator_id` bigint(20) NOT NULL,
   `state` enum('scheduled','completed','undone') NOT NULL DEFAULT 'scheduled'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `calendar_event`
+--
+
+INSERT INTO `calendar_event` (`id`, `title`, `event_date`, `event_type`, `group_id`, `creator_id`, `state`) VALUES
+(2, 'Zmiana tajemnic różańcowych', '2025-01-14 15:33:00', 'MYSTERYCHANGE', 1, 3, 'completed'),
+(3, 'Zmiana tajemnic różańcowych', '2025-01-14 18:00:00', 'MYSTERYCHANGE', 1, 3, 'completed'),
+(4, 'Zmiana tajemnic różańcowych', '2025-01-23 18:44:00', 'MYSTERYCHANGE', 1, 3, 'completed'),
+(5, 'Zmiana tajemnic różańcowych', '2025-01-23 18:48:00', 'MYSTERYCHANGE', 1, 3, 'completed');
 
 -- --------------------------------------------------------
 
@@ -170,10 +180,20 @@ CREATE TABLE `mystery_change_task_member` (
 CREATE TABLE `prayer_status` (
   `id` bigint(20) NOT NULL,
   `user_id` bigint(20) NOT NULL,
-  `mystery_id` bigint(20) NOT NULL,
   `status` tinyint(1) NOT NULL DEFAULT 0,
-  `prayer_date` datetime NOT NULL
+  `prayer_date` date NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `prayer_status`
+--
+
+INSERT INTO `prayer_status` (`id`, `user_id`, `status`, `prayer_date`) VALUES
+(1, 19, 0, '2025-01-23'),
+(2, 14, 0, '2025-01-23'),
+(3, 3, 1, '2025-01-23'),
+(4, 11, 0, '2025-01-23'),
+(5, 13, 0, '2025-01-23');
 
 -- --------------------------------------------------------
 
@@ -193,7 +213,7 @@ CREATE TABLE `rosary_group` (
 --
 
 INSERT INTO `rosary_group` (`id`, `name`, `leader_id`, `intention_id`) VALUES
-(1, 'Róża Świętej Teresy z Lisieux', 3, 2);
+(1, 'Róża Świętej Teresy z Lisieux', 3, 3);
 
 -- --------------------------------------------------------
 
@@ -219,12 +239,13 @@ CREATE TABLE `user` (
 
 INSERT INTO `user` (`id`, `first_name`, `last_name`, `password`, `email`, `role`, `active`, `group_id`, `mystery_id`) VALUES
 (1, 'Marek', 'Nowak', '$2a$12$PEtWsT9935qD7TjoO8jGzuwgr/acJuga8sDZScR2InGE6F.8dZmba', 'mareknowak@mail.com', 'MainZelator', 1, NULL, NULL),
-(3, 'Anna', 'Kowalska', '$2a$10$tfyhxw2Gbi.fWP9ELdalWO2Op0tqzeuRegOcEvESyf4K17t04fMda', 'annakowalski@mail.com', 'Zelator', 1, 1, 1),
-(11, 'Maria', 'Wiśniewska', '$2a$10$kcZ4xDiM5LMpmdCGpkqVJu1SjpKKIx8BngCMP1cqxB7leY.I62loG', 'mariawisniewska@mail.com', 'Member', 1, 1, 6),
-(13, 'Tomasz', 'Zieliński', '$2a$10$k.1C8LIU7.g0eICcSkOgx.VhWu.rJKkeJYkm9NrMFslvHod0UGxJ2', 'tomaszzielinski@mail.com', 'Member', 1, 1, NULL),
-(14, 'Piotr', 'Lewandowski', '$2a$10$wYAJgNP9MTdLDRNiBiYiPOHX3GspVg4VUUFzM068DjjeNrn4Mfdiu', 'piotrlewandowski@mail.com', 'Member', 1, NULL, NULL),
+(3, 'Anna', 'Kowalska', '$2a$10$tfyhxw2Gbi.fWP9ELdalWO2Op0tqzeuRegOcEvESyf4K17t04fMda', 'annakowalski@mail.com', 'Zelator', 1, 1, 12),
+(11, 'Maria', 'Wiśniewska', '$2a$10$kcZ4xDiM5LMpmdCGpkqVJu1SjpKKIx8BngCMP1cqxB7leY.I62loG', 'mariawisniewska@mail.com', 'Member', 1, 1, 13),
+(13, 'Tomasz', 'Zieliński', '$2a$10$k.1C8LIU7.g0eICcSkOgx.VhWu.rJKkeJYkm9NrMFslvHod0UGxJ2', 'tomaszzielinski@mail.com', 'Member', 1, 1, 9),
+(14, 'Piotr', 'Lewandowski', '$2a$10$wYAJgNP9MTdLDRNiBiYiPOHX3GspVg4VUUFzM068DjjeNrn4Mfdiu', 'piotrlewandowski@mail.com', 'Member', 1, 1, 1),
 (15, 'Katarzyna', 'Kamińska', '$2a$10$i0N2TGtRKXdcACdYe6u3i.L5Ht2gCVHOrQWnNaGfQ.Ts5Uw3Ei6.m', 'katarzynakaminska@mail.com', 'Zelator', 1, NULL, NULL),
-(18, 'Monika', 'Dąbrowska', '$2a$10$BfIxLhoAhUpYI.n.dkj1g.HhQ0e/c59aPT2E6S7y85qfVQzDxI8IC', 'monikadabrowska@mail.com', 'Zelator', 1, NULL, NULL);
+(18, 'Monika', 'Dąbrowska', '$2a$10$BfIxLhoAhUpYI.n.dkj1g.HhQ0e/c59aPT2E6S7y85qfVQzDxI8IC', 'monikadabrowska@mail.com', 'Zelator', 1, NULL, NULL),
+(19, 'Mariusz', 'Nowak', '$2a$10$Ps.WZsYqFSiew1fg/QlIM.HHQQZ.gZVbf0i7QS8pDZ/sEBlTHJImO', 'mariusznowak@mail.com', 'Member', 1, 1, 8);
 
 --
 -- Indeksy dla zrzutów tabel
@@ -289,8 +310,7 @@ ALTER TABLE `mystery_change_task_member`
 --
 ALTER TABLE `prayer_status`
   ADD PRIMARY KEY (`id`),
-  ADD KEY `user_id` (`user_id`),
-  ADD KEY `mystery_id` (`mystery_id`);
+  ADD UNIQUE KEY `user_id` (`user_id`);
 
 --
 -- Indeksy dla tabeli `rosary_group`
@@ -317,7 +337,7 @@ ALTER TABLE `user`
 -- AUTO_INCREMENT for table `calendar_event`
 --
 ALTER TABLE `calendar_event`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `chat`
@@ -347,19 +367,19 @@ ALTER TABLE `mystery`
 -- AUTO_INCREMENT for table `mystery_change_task`
 --
 ALTER TABLE `mystery_change_task`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
 
 --
 -- AUTO_INCREMENT for table `mystery_change_task_member`
 --
 ALTER TABLE `mystery_change_task_member`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=39;
 
 --
 -- AUTO_INCREMENT for table `prayer_status`
 --
 ALTER TABLE `prayer_status`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `rosary_group`
@@ -371,7 +391,7 @@ ALTER TABLE `rosary_group`
 -- AUTO_INCREMENT for table `user`
 --
 ALTER TABLE `user`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
 
 --
 -- Constraints for dumped tables
@@ -418,8 +438,7 @@ ALTER TABLE `mystery_change_task_member`
 -- Constraints for table `prayer_status`
 --
 ALTER TABLE `prayer_status`
-  ADD CONSTRAINT `prayer_status_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`),
-  ADD CONSTRAINT `prayer_status_ibfk_2` FOREIGN KEY (`mystery_id`) REFERENCES `mystery` (`id`);
+  ADD CONSTRAINT `fk_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`);
 
 --
 -- Constraints for table `rosary_group`

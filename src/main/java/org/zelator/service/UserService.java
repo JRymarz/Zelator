@@ -171,4 +171,10 @@ public class UserService {
                 .orElseThrow(() -> new EntityNotFoundException("Nie znaleziono użytkownika."));
     }
 
+
+    public List<User> getAllUsers() {
+        List<User> users = userRepository.findAll();
+        return users;
+    }
+
 }

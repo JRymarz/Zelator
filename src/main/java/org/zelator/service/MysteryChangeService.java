@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.zelator.entity.*;
 import org.zelator.repository.*;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -25,6 +26,7 @@ public class MysteryChangeService {
     private final GroupRepository groupRepository;
     private final IntentionRepository intentionRepository;
     private final MysteryChangeTaskMemberRepository mysteryChangeTaskMemberRepository;
+    private final PrayerStatusService prayerStatusService;
 
 
     public void planMysteryChange(Long groupId,
@@ -135,6 +137,11 @@ public class MysteryChangeService {
         for(MysteryChangeTaskMember taskMember : taskMembers) {
             User user = taskMember.getUser();
             Mystery mystery = taskMember.getMystery();
+
+            if(user != null && user.getMystery() == null){
+                LocalDate today = LocalDate.now();
+                prayerStatusService.createNewPrayerStatus(user, today);
+            }
 
             if(user != null && mystery != null) {
                 user.setMystery(mystery);

@@ -19,18 +19,14 @@ public class PrayerStatus {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
+    @OneToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
-
-    @ManyToOne
-    @JoinColumn(name = "mystery_id", nullable = false)
-    private Mystery mystery;
 
     @Column(nullable = false)
     private Boolean status = false;
 
     @Column(nullable = false)
-    private LocalDateTime prayerDate;
+    private LocalDate prayerDate;
 
 }

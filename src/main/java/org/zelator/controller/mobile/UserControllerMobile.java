@@ -10,6 +10,7 @@ import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.zelator.dto.LoginRequest;
+import org.zelator.entity.Group;
 import org.zelator.entity.Intention;
 import org.zelator.entity.Mystery;
 import org.zelator.entity.User;
@@ -51,7 +52,10 @@ public class UserControllerMobile {
             response.put("lastName", user.getLastName());
             response.put("role", user.getRole().name());
             response.put("email", user.getEmail());
-            response.put("group", user.getGroup().getId());
+            if(user.getGroup() == null) {
+                response.put("group", null);
+            } else
+                response.put("group", user.getGroup().getId());
 
             System.out.println("Wysylam dane usera do frontu");
             return ResponseEntity.ok(response);
@@ -70,7 +74,8 @@ public class UserControllerMobile {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Nie znaleziono użytkownika.");
             }
 
-            Intention intention = user.getGroup().getIntention();
+            Group group = user.getGroup();
+            Intention intention = (group != null) ? group.getIntention() : null;
             Mystery mystery = user.getMystery();
 
             Map<String, Object> response = new HashMap<>();
