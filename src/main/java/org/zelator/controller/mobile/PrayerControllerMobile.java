@@ -82,7 +82,8 @@ public class PrayerControllerMobile {
             if(status == null) {
                 return ResponseEntity.ok(null);
             }
-            return ResponseEntity.ok(status);
+
+            return ResponseEntity.ok(status.getStatus());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Nieoczkiwany błąd.");
         }

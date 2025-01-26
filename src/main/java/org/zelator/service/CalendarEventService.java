@@ -4,6 +4,7 @@ package org.zelator.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.zelator.entity.CalendarEvent;
+import org.zelator.entity.MassRequest;
 import org.zelator.entity.User;
 import org.zelator.repository.CalendarEventRepository;
 
@@ -27,6 +28,18 @@ public class CalendarEventService {
         calendarEvent.setState(CalendarEvent.State.undone);
 
         calendarEventRepository.save(calendarEvent);
+    }
+
+
+    public void createMassEvent(MassRequest massRequest) {
+        CalendarEvent event = new CalendarEvent();
+        event.setTitle("Msza Święta: " + massRequest.getIntention());
+        event.setEventDate(massRequest.getMassDate());
+        event.setCreator(massRequest.getUser());
+        event.setEventType(CalendarEvent.EventType.MASS);
+        event.setState(CalendarEvent.State.scheduled);
+
+        calendarEventRepository.save(event);
     }
 
 }
