@@ -19,7 +19,7 @@ public class Chat {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "sender_id", nullable = false)
+    @JoinColumn(name = "sender_id", nullable = true)
     private User sender;
 
     @ManyToOne
@@ -35,4 +35,7 @@ public class Chat {
 
     @Column(nullable = false)
     private LocalDateTime timeStamp = LocalDateTime.now();
+
+    @Column(nullable = false, name = "is_read")
+    private Boolean isRead = false;
 }
