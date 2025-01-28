@@ -37,4 +37,15 @@ public interface ChatRepository extends JpaRepository<Chat, Long> {
     @Query("SELECT c FROM Chat c WHERE c.receiver.id = :receiverId AND c.sender.id = :senderId AND c.isRead = false")
     List<Chat> findUnreadPrivateMessages(@Param("receiverId") Long receiverId, @Param("senderId") Long senderId);
 
+
+    @Query("SELECT DISTINCT c.sender.id " +
+            "FROM Chat c " +
+            "WHERE c.isRead = false AND c.receiver.id = :userId")
+    List<Long> findUnreadUserMessages(@Param("userId") Long userId);
+
+    @Query("SELECT COUNT(c) > 0 " +
+            "FROM Chat c " +
+            "WHERE c.isRead = false AND c.group.id = :groupId")
+    boolean hasUnreadGroupMessages(@Param("groupId") Long groupId);
+
 }
