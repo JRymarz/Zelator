@@ -17,5 +17,6 @@ public class ChatDto {
     private Boolean isRead;
     private String senderName;
     private String groupName;
+    private Long senderId;
 
 }

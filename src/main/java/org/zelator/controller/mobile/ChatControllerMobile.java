@@ -92,7 +92,8 @@ public class ChatControllerMobile {
                             chat.getTimeStamp(),
                             chat.getIsRead(),
                             chat.getSender() != null ? chat.getSender().getFirstName() + " " + chat.getSender().getLastName() : null,
-                            chat.getGroup() != null ? chat.getGroup().getName() : null
+                            chat.getGroup() != null ? chat.getGroup().getName() : null,
+                            chat.getSender().getId()
                     ))
                     .toList();
 
@@ -139,7 +140,8 @@ public class ChatControllerMobile {
                     chat.getTimeStamp(),
                     chat.getIsRead(),
                     chat.getSender() != null ? chat.getSender().getFirstName() + " " + chat.getSender().getLastName() : null,
-                    chat.getGroup() != null ? chat.getGroup().getName() : null
+                    chat.getGroup() != null ? chat.getGroup().getName() : null,
+                    chat.getSender().getId()
             );
 
             return ResponseEntity.ok(response);
