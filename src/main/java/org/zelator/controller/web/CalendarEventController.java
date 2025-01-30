@@ -11,6 +11,8 @@ import org.zelator.entity.User;
 import org.zelator.repository.CalendarEventRepository;
 import org.zelator.service.CalendarEventService;
 
+import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -63,6 +65,41 @@ public class CalendarEventController {
             return ResponseEntity.ok("Event created succesfully.");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Nieoczekiwny błąd");
+        }
+    }
+
+
+    @GetMapping("/calendar-events/next")
+    @CrossOrigin
+    public ResponseEntity<?> getNextCalendarEvent(HttpSession session) {
+        try {
+            User user = (User) session.getAttribute("user");
+            if(user == null || user.getGroup() == null)
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
+
+            List<CalendarEvent> events = calendarEventRepository.findEventsForZelator(user.getId(), user.getGroup().getId());
+
+            List<CalendarEvent> upcomingEvents = events.stream()
+                    .filter(event -> event.getEventDate().isAfter(LocalDateTime.now()))
+                    .sorted(Comparator.comparing(CalendarEvent::getEventDate))
+                    .collect(Collectors.toList());
+
+            if(upcomingEvents.isEmpty())
+                return ResponseEntity.ok(null);
+
+            CalendarEvent nextEvent = upcomingEvents.get(0);
+            CalendarEventDto eventDto = new CalendarEventDto(
+                    nextEvent.getId(),
+                    nextEvent.getTitle(),
+                    nextEvent.getEventDate(),
+                    nextEvent.getEventType().name(),
+                    nextEvent.getCreator().getFirstName() + " " + nextEvent.getCreator().getLastName()
+            );
+
+            return ResponseEntity.ok(eventDto);
+        } catch(Exception e) {
+            e.getMessage();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Nieoczekiwany błąd");
         }
     }
 

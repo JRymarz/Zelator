@@ -37,6 +37,9 @@ public class GroupController {
         System.out.println("Jestem w backendzie");
         try {
             User leader = userService.getCurrentUser();
+            if(leader.getGroup() != null)
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Zelator cannot have more groups");
+
             Intention intention = intentionService.getById(groupRequest.getIntentionId());
             System.out.println(leader.getEmail() + ", " + intention.getTitle());
 

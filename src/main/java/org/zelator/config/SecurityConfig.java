@@ -54,7 +54,8 @@ public class SecurityConfig {
                         .requestMatchers("/create-zelator").hasAuthority("MainZelator")
                         .requestMatchers("/create-user", "/groups/create", "/intentions",
                                 "/members/**", "/my-rose", "/roses/**",
-                                "/mysteries", "/mass-requests/**", "calendar-events/**", "/chat/**").hasAuthority("Zelator")
+                                "/mysteries", "/mass-requests/**", "calendar-events/**", "/chat/**",
+                                "/intention-mystery", "/members-status").hasAuthority("Zelator")
                         .anyRequest().authenticated()
                 )
                 .httpBasic(Customizer.withDefaults())

@@ -16,4 +16,7 @@ public interface MassRequestRepository extends JpaRepository<MassRequest, Long> 
 
     List<MassRequest> findByUserIdIn(List<Long> userIds);
 
+
+    boolean existsByUserIdInAndStatus(List<Long> userIds, MassRequest.MassStatus status);
+
 }

@@ -114,4 +114,25 @@ public class MassRequestController {
         }
     }
 
+
+    @GetMapping("/mass-request/are-unchecked")
+    @CrossOrigin
+    public ResponseEntity<?> areUnchecked(HttpSession session) {
+        try {
+            User user = (User) session.getAttribute("user");
+            if (user == null || user.getGroup() == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
+            }
+
+            List<User> groupMembers = groupRepository.findMembersByGroupId(user.getGroup().getId());
+            List<Long> membersId = groupMembers.stream().map(User::getId).collect(Collectors.toList());
+
+            Boolean response = massRequestRepository.existsByUserIdInAndStatus(membersId, MassRequest.MassStatus.PENDING);
+
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Wystąpił nieoczekiwany błąd.");
+        }
+    }
+
 }

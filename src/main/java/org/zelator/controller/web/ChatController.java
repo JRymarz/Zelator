@@ -1,6 +1,7 @@
 package org.zelator.controller.web;
 
 
+import com.sun.net.httpserver.HttpsServer;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -231,6 +232,32 @@ public class ChatController {
             Map<String, Object> response = new HashMap<>();
             response.put("unreadUserConversations", unreadUserMessages);
             response.put("unreadGroupConversation", unreadGroupMessages ? groupId : null);
+
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            System.err.println(e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Nieoczekiwany błąd");
+        }
+    }
+
+
+    @GetMapping("/chat/are-unread")
+    @CrossOrigin
+    public ResponseEntity<?> areUnread(HttpSession session) {
+        try {
+            User user = (User) session.getAttribute("user");
+            if(user == null || user.getGroup() == null)
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
+
+            Long userId = user.getId();
+            Long groupId = user.getGroup().getId();
+
+            List<Long> unreadUserMessages = chatRepository.findUnreadUserMessages(userId);
+            Boolean unreadGroupMessages = chatRepository.hasUnreadGroupMessages(groupId);
+
+            Boolean response = false;
+            if(unreadGroupMessages || !unreadUserMessages.isEmpty())
+                response = true;
 
             return ResponseEntity.ok(response);
         } catch (Exception e) {

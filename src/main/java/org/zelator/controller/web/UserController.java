@@ -17,12 +17,19 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import org.zelator.dto.LoginRequest;
+import org.zelator.dto.MemberStatusResponse;
 import org.zelator.dto.UserCookieDto;
 import org.zelator.dto.UserDto;
-import org.zelator.entity.User;
+import org.zelator.entity.*;
+import org.zelator.repository.PrayerStatusRepository;
+import org.zelator.repository.UserRepository;
 import org.zelator.service.UserService;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 @RestController
 @CrossOrigin(origins = "http://localhost:3000/", allowCredentials = "true")
@@ -31,6 +38,8 @@ public class UserController {
 
 
     private final UserService userService;
+    private final UserRepository userRepository;
+    private final PrayerStatusRepository prayerStatusRepository;
 
 
     @PostMapping("/login")
@@ -170,6 +179,68 @@ public class UserController {
     public ResponseEntity<Void> removeMember(@PathVariable Long memberId) {
         userService.removeMember(memberId);
         return ResponseEntity.noContent().build();
+    }
+
+
+    @GetMapping("/intention-mystery")
+    @CrossOrigin
+    public ResponseEntity<?> getIntentionAndMystery(HttpSession session) {
+        try {
+            User user = (User) session.getAttribute("user");
+            if(user == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
+            }
+
+            Group group = user.getGroup();
+            Intention intention = (group != null) ? group.getIntention() : null;
+            Mystery mystery = user.getMystery();
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("intention", intention != null ? Map.of("title", intention.getTitle()) : null);
+            response.put("mystery", mystery != null ? Map.of("name", mystery.getName()) : null);
+
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            System.err.println(e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Nieoczekiwany bład");
+        }
+    }
+
+
+    @GetMapping("/members-status")
+    @CrossOrigin
+    public ResponseEntity<?> getMembersStatuses(HttpSession session) {
+        try {
+            User user = (User) session.getAttribute("user");
+            if (user == null || user.getGroup() == null)
+                ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
+
+            List<User> groupMembers = userRepository.findByGroupId(user.getGroup().getId())
+                    .orElse(null);
+
+            List<MemberStatusResponse> response = groupMembers.stream()
+                    .map(member -> {
+                        PrayerStatus prayerStatus = prayerStatusRepository.findByUser(member)
+                                .orElse(null);
+
+                        if(prayerStatus == null)
+                            return null;
+
+                        return new MemberStatusResponse(
+                                member.getId(),
+                                member.getFirstName(),
+                                member.getLastName(),
+                                prayerStatus.getStatus()
+                        );
+                    })
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toList());
+
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            System.err.println(e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Niespodziewany błąd");
+        }
     }
 
 }
