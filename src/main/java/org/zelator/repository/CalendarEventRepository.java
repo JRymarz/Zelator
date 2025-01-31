@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.zelator.entity.CalendarEvent;
 
+import java.time.LocalDate;
 import java.util.List;
 
 public interface CalendarEventRepository extends JpaRepository<CalendarEvent, Long> {
@@ -20,5 +21,8 @@ public interface CalendarEventRepository extends JpaRepository<CalendarEvent, Lo
             "WHERE e.creator.id = :creatorId " +
             "OR e.group.id = :groupId")
     List<CalendarEvent> findEventsForMember(@Param("creatorId") Long creatorId, @Param("groupId") Long groupId);
+
+
+    List<CalendarEvent> findByEventDate(LocalDate day);
 
 }

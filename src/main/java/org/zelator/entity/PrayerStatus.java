@@ -7,6 +7,7 @@ import lombok.Setter;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 @Entity
 @Table(name = "prayer_status")
@@ -28,5 +29,8 @@ public class PrayerStatus {
 
     @Column(nullable = false)
     private LocalDate prayerDate;
+
+    @Column(name = "prayer_reminder_time", nullable = true)
+    private LocalTime prayerReminderTime;
 
 }

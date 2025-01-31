@@ -48,4 +48,7 @@ public interface ChatRepository extends JpaRepository<Chat, Long> {
             "WHERE c.isRead = false AND c.group.id = :groupId")
     boolean hasUnreadGroupMessages(@Param("groupId") Long groupId);
 
+
+    List<Chat> findByReceiverIdAndSenderIsNullOrderByTimeStampAsc(Long userId);
+
 }

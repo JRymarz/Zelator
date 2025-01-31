@@ -29,9 +29,6 @@ public class GroupService {
 
 
     public Group createGroup(String name, User leader, Intention intention) {
-        if(leader.getRole() != User.Role.Zelator) {
-            throw new IllegalArgumentException("Tylko Zelator może utworzyć różę.");
-        }
 
         if(leader.getGroup() != null) {
             throw new IllegalArgumentException("Zelator może zarządzać tylko jedną różą.");

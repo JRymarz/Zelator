@@ -3,6 +3,7 @@ package org.zelator.controller.web;
 
 import com.sun.net.httpserver.HttpsServer;
 import jakarta.servlet.http.HttpSession;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,9 +17,11 @@ import org.zelator.repository.ChatRepository;
 import org.zelator.repository.GroupRepository;
 import org.zelator.repository.UserRepository;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RestController
@@ -263,6 +266,88 @@ public class ChatController {
         } catch (Exception e) {
             System.err.println(e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Nieoczekiwany błąd");
+        }
+    }
+
+
+    @PostMapping("/chat/notifications/reminder/{userId}")
+    @CrossOrigin
+    public ResponseEntity<?> sendPrayerReminder(@PathVariable Long userId) {
+        try {
+            Optional<User> userOptional = userRepository.findById(userId);
+            if (userOptional.isEmpty())
+                return ResponseEntity.badRequest().body("User not found");
+
+            User user = userOptional.get();
+            Chat reminder = new Chat();
+            reminder.setReceiver(user);
+            reminder.setMessage("Przypomnienei: Nie odmówiłeś jeszcze dzisiejszej modlitwy.");
+            reminder.setIsRead(false);
+            reminder.setTimeStamp(LocalDateTime.now());
+
+            chatRepository.save(reminder);
+
+            return ResponseEntity.ok("Reminder sent");
+        } catch (Exception e) {
+            System.err.println(e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Unexpected error");
+        }
+    }
+
+
+    @GetMapping("/chat/notifications")
+    @CrossOrigin
+    public ResponseEntity<?> getMyNotifications(HttpSession session) {
+        try {
+            User user = (User) session.getAttribute("user");
+            if(user == null)
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Use nto found");
+
+            Long currentUserId = user.getId();
+            List<Chat> notifications = chatRepository.findByReceiverIdAndSenderIsNullOrderByTimeStampAsc(currentUserId);
+
+            List<ChatDto> response = notifications.stream()
+                    .map(chat -> new ChatDto(
+                            chat.getId(),
+                            chat.getMessage(),
+                            chat.getTimeStamp(),
+                            chat.getIsRead(),
+                            null,
+                            null,
+                            null
+                    ))
+                    .toList();
+
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            System.err.println(e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Unexpected error");
+        }
+    }
+
+
+    @PostMapping("/chat/read-notifications")
+    @CrossOrigin
+    @Transactional
+    public ResponseEntity<?> markNotificationsAsRead(HttpSession session) {
+        try {
+            User user = (User) session.getAttribute("user");
+            if(user == null)
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
+
+            Long currentUserId = user.getId();
+            List<Chat> notifications = chatRepository.findByReceiverIdAndSenderIsNullOrderByTimeStampAsc(currentUserId);
+
+            for(Chat noti : notifications) {
+                noti.setIsRead(true);
+            }
+
+            chatRepository.saveAll(notifications);
+
+            return ResponseEntity.ok("Marked as read");
+        } catch (Exception e) {
+            System.err.println(e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Unexpected error");
         }
     }
 

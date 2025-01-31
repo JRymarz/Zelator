@@ -98,7 +98,7 @@ public class CalendarEventController {
 
             return ResponseEntity.ok(eventDto);
         } catch(Exception e) {
-            e.getMessage();
+            System.err.println(e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Nieoczekiwany błąd");
         }
     }

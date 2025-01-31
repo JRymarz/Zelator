@@ -1,6 +1,7 @@
 package org.zelator.controller.mobile;
 
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -182,6 +183,115 @@ public class ChatControllerMobile {
         } catch (Exception e) {
             System.err.println(e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Nieoczekiwany błąd.");
+        }
+    }
+
+
+    @GetMapping("/mob/chat/unread-conversations")
+    @CrossOrigin
+    public ResponseEntity<?> getUnreadConversations(@RequestHeader("User-ID") Long userId) {
+        try {
+            User currentUser = userService.getById(userId);
+            if (currentUser == null || currentUser.getGroup() == null)
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
+
+//            Long userId = currentUser.getId();
+            Long groupId = currentUser.getGroup().getId();
+
+            List<Long> unreadUserMessages = chatRepository.findUnreadUserMessages(userId);
+            Boolean unreadGroupMessages = chatRepository.hasUnreadGroupMessages(groupId);
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("unreadUserConversations", unreadUserMessages);
+            response.put("unreadGroupConversation", unreadGroupMessages ? groupId : null);
+
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            System.err.println(e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Nieoczekiwany błąd");
+        }
+    }
+
+
+    @GetMapping("/mob/chat/are-unread")
+    @CrossOrigin
+    public ResponseEntity<?> areUnread(@RequestHeader("User-ID") Long userId) {
+        try {
+            User user = userService.getById(userId);
+            if (user == null || user.getGroup() == null)
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
+
+//            Long userId = user.getId();
+            Long groupId = user.getGroup().getId();
+
+            List<Long> unreadUserMessages = chatRepository.findUnreadUserMessages(userId);
+            Boolean unreadGroupMessages = chatRepository.hasUnreadGroupMessages(groupId);
+
+            Boolean response = false;
+            if(unreadGroupMessages || !unreadUserMessages.isEmpty())
+                response = true;
+
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            System.err.println(e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Nieoczekiwany błąd");
+        }
+    }
+
+
+    @GetMapping("/mob/chat/notifications")
+    @CrossOrigin
+    public ResponseEntity<?> getMyNotifiactions(@RequestHeader("User-ID") Long userId) {
+        try {
+            User user = userService.getById(userId);
+            if(user == null)
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Use nto found");
+
+            Long currentUserId = user.getId();
+            List<Chat> notifications = chatRepository.findByReceiverIdAndSenderIsNullOrderByTimeStampAsc(currentUserId);
+
+            List<ChatDto> response = notifications.stream()
+                    .map(chat -> new ChatDto(
+                            chat.getId(),
+                            chat.getMessage(),
+                            chat.getTimeStamp(),
+                            chat.getIsRead(),
+                            null,
+                            null,
+                            null
+                    ))
+                    .toList();
+
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            System.err.println(e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Unexpected error");
+        }
+    }
+
+
+    @PostMapping("/mob/chat/read-notifications")
+    @CrossOrigin
+    @Transactional
+    public ResponseEntity<?> markNotificationsAsRead(@RequestHeader("User-ID") Long userId) {
+        try {
+            User user = userService.getById(userId);
+            if(user == null)
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
+
+            Long currentUserId = user.getId();
+            List<Chat> notifications = chatRepository.findByReceiverIdAndSenderIsNullOrderByTimeStampAsc(currentUserId);
+
+            for(Chat noti : notifications) {
+                noti.setIsRead(true);
+            }
+
+            chatRepository.saveAll(notifications);
+
+            return ResponseEntity.ok("Marked as read");
+        } catch (Exception e) {
+            System.err.println(e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Unexpected error");
         }
     }
 

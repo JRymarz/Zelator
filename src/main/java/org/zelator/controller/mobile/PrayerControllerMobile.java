@@ -5,12 +5,15 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.zelator.dto.PrayerReminder;
 import org.zelator.entity.*;
+import org.zelator.repository.PrayerStatusRepository;
 import org.zelator.service.IntentionService;
 import org.zelator.service.MysteryService;
 import org.zelator.service.PrayerStatusService;
 import org.zelator.service.UserService;
 
+import java.time.LocalTime;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -24,6 +27,7 @@ public class PrayerControllerMobile {
     private final MysteryService mysteryService;
     private final UserService userService;
     private final PrayerStatusService prayerStatusService;
+    private final PrayerStatusRepository prayerStatusRepository;
 
 
     @GetMapping("/mob/prayer-details")
@@ -86,6 +90,35 @@ public class PrayerControllerMobile {
             return ResponseEntity.ok(status.getStatus());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Nieoczkiwany błąd.");
+        }
+    }
+
+
+    @PostMapping("/mob/save-prayer-reminder")
+    @CrossOrigin
+    public ResponseEntity<?> saveReminderTime(@RequestHeader("User-ID") Long userId,
+                                              @RequestBody PrayerReminder reminderRequest) {
+
+        try {
+            User user = userService.getById(userId);
+            if(user == null || user.getGroup() == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Nie znaleziono użytkownika.");
+            }
+
+            PrayerStatus prayerStatus = prayerStatusService.getByUserId(user.getId());
+            if(prayerStatus == null)
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Nie znaleziono użytkownika.");
+
+            LocalTime reminderTime = LocalTime.parse(reminderRequest.getTime());
+
+            prayerStatus.setPrayerReminderTime(reminderTime);
+
+            prayerStatusRepository.save(prayerStatus);
+
+            return ResponseEntity.ok("Czas przypomnienia o modlitwie został zapisany.");
+        } catch (Exception e) {
+            System.err.println(e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Wystąpił błąd podczas zapisywania przypomnienia.");
         }
     }
 
