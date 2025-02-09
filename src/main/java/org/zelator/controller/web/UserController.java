@@ -21,6 +21,7 @@ import org.zelator.dto.MemberStatusResponse;
 import org.zelator.dto.UserCookieDto;
 import org.zelator.dto.UserDto;
 import org.zelator.entity.*;
+import org.zelator.repository.GroupRepository;
 import org.zelator.repository.PrayerStatusRepository;
 import org.zelator.repository.UserRepository;
 import org.zelator.service.UserService;
@@ -40,6 +41,7 @@ public class UserController {
     private final UserService userService;
     private final UserRepository userRepository;
     private final PrayerStatusRepository prayerStatusRepository;
+    private final GroupRepository groupRepository;
 
 
     @PostMapping("/login")
@@ -166,6 +168,10 @@ public class UserController {
     public ResponseEntity<?> assignMemberToGroup(@PathVariable Long memberId, @RequestBody Long groupId) {
         System.out.println("MemberId: " + memberId + ", groupId: " + groupId);
         try {
+            List<User> groupMembers = groupRepository.findMembersByGroupId(groupId);
+            if(groupMembers.size() > 19)
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Grupa jest pełna");
+
             userService.assignMemberToGroup(memberId, groupId);
             return ResponseEntity.ok("Członek został przypisany do grupy.");
         } catch (Exception e) {
