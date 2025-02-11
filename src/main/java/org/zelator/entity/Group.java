@@ -23,7 +23,7 @@ public class Group {
     private String name;
 
     @ManyToOne
-    @JoinColumn(name = "leader_id", nullable = false)
+    @JoinColumn(name = "leader_id", nullable = true)
     private User leader;
 
     @ManyToOne

@@ -77,6 +77,13 @@ public class UserService {
             throw new IllegalArgumentException("Użytkownik o podanym adresie email już istnieje.");
         }
 
+        Group group = groupRepository.getById(userDto.getGroupId());
+
+        List<User> members = groupRepository.findMembersByGroupId(userDto.getGroupId());
+        if(members.size() > 19) {
+            throw new IllegalStateException("Grupa osiągnęła maksymalną liczbę członków.");
+        }
+
         User user = new User();
         user.setEmail(userDto.getEmail());
         user.setPassword(bCryptPasswordEncoder.encode(userDto.getPassword()));
@@ -84,8 +91,12 @@ public class UserService {
         user.setLastName(userDto.getLastName());
         user.setRole(User.Role.Member);
         user.setActive(true);
+        user.setGroup(group);
 
-        userRepository.save(user);
+        user = userRepository.save(user);
+
+        group.getMembers().add(user);
+        groupRepository.save(group);
     }
 
 

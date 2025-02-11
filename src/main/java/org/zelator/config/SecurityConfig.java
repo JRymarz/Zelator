@@ -51,8 +51,8 @@ public class SecurityConfig {
                 .cors(Customizer.withDefaults())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/login", "/current-user", "/logout", "/mob/**").permitAll()
-                        .requestMatchers("/create-zelator").hasAuthority("MainZelator")
-                        .requestMatchers("/create-user", "/groups/create", "/intentions",
+                        .requestMatchers("/create-zelator", "/groups/create", "/create-user", "/groups", "/group/").hasAuthority("MainZelator")
+                        .requestMatchers(  "/intentions",
                                 "/members/**", "/my-rose", "/roses/**",
                                 "/mysteries", "/mass-requests/**", "calendar-events/**", "/chat/**",
                                 "/intention-mystery", "/members-status").hasAnyAuthority("Zelator", "MainZelator")

@@ -9,6 +9,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.zelator.dto.GroupDetailsDto;
 import org.zelator.dto.GroupRequest;
+import org.zelator.dto.SimpleGroupDetailsDto;
 import org.zelator.entity.Intention;
 import org.zelator.entity.User;
 import org.zelator.service.GroupService;
@@ -31,19 +32,13 @@ public class GroupController {
 
 
     @PostMapping("/groups/create")
-    @PreAuthorize("hasAuthority('Zelator')")
     @CrossOrigin
     public ResponseEntity<String> createGroup(@RequestBody GroupRequest groupRequest) {
         System.out.println("Jestem w backendzie");
         try {
-            User leader = userService.getCurrentUser();
-            if(leader.getGroup() != null)
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Zelator cannot have more groups");
-
             Intention intention = intentionService.getById(groupRequest.getIntentionId());
-            System.out.println(leader.getEmail() + ", " + intention.getTitle());
 
-            groupService.createGroup(groupRequest.getName(), leader, intention);
+            groupService.createGroup(groupRequest.getName(), intention);
 
             return ResponseEntity.ok("Róża zostałą utworzona pomyślnie.");
         } catch (IllegalArgumentException e) {
@@ -68,6 +63,23 @@ public class GroupController {
         GroupDetailsDto roseDetails = groupService.getGroupDetails(user.getGroup().getId());
 
         return ResponseEntity.ok(roseDetails);
+    }
+
+
+    @GetMapping("/groups")
+    @CrossOrigin
+    public ResponseEntity<?> getAllGroups() {
+        List<GroupRequest> groupLists = groupService.getAllGroupList();
+
+        return ResponseEntity.ok(groupLists);
+    }
+
+
+    @GetMapping("/group/{groupId}")
+    @CrossOrigin
+    public ResponseEntity<SimpleGroupDetailsDto> getGroupDetails(@PathVariable Long groupId) {
+        SimpleGroupDetailsDto groupDetails = groupService.getSimpleGroupDetails(groupId);
+        return ResponseEntity.ok(groupDetails);
     }
 
 

@@ -123,6 +123,8 @@ public class UserController {
         try {
             userService.createUser(userDto);
             return ResponseEntity.ok("Konto użytkownika zostało utworzone.");
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Nie udało się utworzyć nowego konta.");
         }

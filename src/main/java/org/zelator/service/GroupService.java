@@ -1,9 +1,12 @@
 package org.zelator.service;
 
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.zelator.dto.GroupDetailsDto;
+import org.zelator.dto.GroupRequest;
+import org.zelator.dto.SimpleGroupDetailsDto;
 import org.zelator.entity.Group;
 import org.zelator.entity.Intention;
 import org.zelator.entity.Mystery;
@@ -28,25 +31,12 @@ public class GroupService {
     private final MysteryRepository mysteryRepository;
 
 
-    public Group createGroup(String name, User leader, Intention intention) {
-
-        if(leader.getGroup() != null) {
-            throw new IllegalArgumentException("Zelator może zarządzać tylko jedną różą.");
-        }
-
+    public Group createGroup(String name, Intention intention) {
         Group group = new Group();
         group.setName(name);
-        group.setLeader(leader);
         group.setIntention(intention);
 
-        leader.setGroup(group);
-
-        group.getMembers().add(leader);
-
-        System.out.println("Grupa utworzona ale przed zapisaniem jej i zmian w leaderze");
-
         groupRepository.save(group);
-        userRepository.save(leader);
 
         return group;
     }
@@ -102,6 +92,83 @@ public class GroupService {
         roseDetails.setMembers(members);
 
         return roseDetails;
+    }
+
+
+    public List<GroupRequest> getAllGroupList() {
+        return groupRepository.findAll().stream()
+                .map(group -> {
+                    GroupRequest dto = new GroupRequest();
+                    dto.setGroupId(group.getId());
+                    dto.setName(group.getName());
+                    return dto;
+                })
+                .collect(Collectors.toList());
+    }
+
+
+    public SimpleGroupDetailsDto getSimpleGroupDetails(Long groupId) {
+        Group group = groupRepository.findById(groupId)
+                .orElseThrow(() -> new IllegalArgumentException("Grupa o podanym id nie istnieje."));
+
+        SimpleGroupDetailsDto groupDetails = new SimpleGroupDetailsDto();
+        groupDetails.setId(group.getId());
+        groupDetails.setName(group.getName());
+
+        // Sprawdzenie, czy leader istnieje
+        GroupDetailsDto.MemberDetailsDto leaderDto = null;
+        if (group.getLeader() != null) {
+            User leader = userRepository.findById(group.getLeader().getId())
+                    .orElse(null);
+
+            if (leader != null) {
+                leaderDto = new GroupDetailsDto.MemberDetailsDto();
+                leaderDto.setId(leader.getId());
+                leaderDto.setFirstName(leader.getFirstName());
+                leaderDto.setLastName(leader.getLastName());
+                leaderDto.setEmail(leader.getEmail());
+                leaderDto.setRole(leader.getRole().name());
+            }
+        }
+        groupDetails.setLeader(leaderDto);
+
+        List<GroupDetailsDto.MemberDetailsDto> members = group.getMembers().stream()
+                .map(member -> {
+                    GroupDetailsDto.MemberDetailsDto memberDto = new GroupDetailsDto.MemberDetailsDto();
+                    memberDto.setId(member.getId());
+                    memberDto.setFirstName(member.getFirstName());
+                    memberDto.setLastName(member.getLastName());
+                    memberDto.setEmail(member.getEmail());
+                    memberDto.setRole(member.getRole().name());
+                    return memberDto;
+                })
+                .collect(Collectors.toList());
+
+        groupDetails.setMembers(members);
+
+        return groupDetails;
+    }
+
+
+    @Transactional
+    public void appointLeader(Long groupId, Long userId) {
+        Group group = groupRepository.findById(groupId)
+                .orElseThrow(() -> new IllegalArgumentException("Grupa nie istnieje"));
+
+        User currentLeader = group.getLeader();
+        if(currentLeader != null){
+            currentLeader.setRole(User.Role.Member);
+            userRepository.save(currentLeader);
+        }
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("Uzytkownik nie istnieje"));
+
+        group.setLeader(user);
+        user.setRole(User.Role.Zelator);
+
+        groupRepository.save(group);
+        userRepository.save(user);
     }
 
 }
