@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Feb 10, 2025 at 10:28 AM
+-- Generation Time: Feb 13, 2025 at 11:38 AM
 -- Wersja serwera: 10.4.32-MariaDB
 -- Wersja PHP: 8.2.12
 
@@ -55,7 +55,7 @@ INSERT INTO `calendar_event` (`id`, `title`, `event_date`, `event_type`, `group_
 (12, 'Mój event', '2025-01-30 08:00:00', 'OTHER', NULL, 3, 'scheduled'),
 (13, 'Własne wydarzenie', '2025-01-29 12:00:00', 'OTHER', NULL, 13, 'scheduled'),
 (14, 'Zmiana tajemnic różańcowych', '2025-02-04 20:00:00', 'MYSTERYCHANGE', 1, 3, 'completed'),
-(15, 'Zmiana tajemnic różańcowych', '2025-02-25 18:00:00', 'MYSTERYCHANGE', 1, 3, 'scheduled'),
+(15, 'Zmiana tajemnic różańcowych', '2025-03-02 18:00:00', 'MYSTERYCHANGE', 1, 3, 'scheduled'),
 (16, 'Zmiana tajemnic różańcowych', '2025-02-01 18:00:00', 'MYSTERYCHANGE', 2, 1, 'completed');
 
 -- --------------------------------------------------------
@@ -89,7 +89,8 @@ INSERT INTO `chat` (`id`, `sender_id`, `receiver_id`, `receiver_gr_id`, `message
 (29, 11, 13, NULL, 'Cześć, Tomek! Jak się czujesz?', '2025-02-09 20:50:49', 1),
 (30, 13, 11, NULL, 'Dzień dobry, Mario! Dobrze, dziękuję. A Ty?', '2025-02-09 20:51:25', 0),
 (31, 11, 13, NULL, 'Też dobrze! Pomyślałam, że może warto by było pomodlić się dzisiaj razem.', '2025-02-09 20:51:56', 1),
-(32, NULL, 14, NULL, 'Przypomnienei: Nie odmówiłeś jeszcze dzisiejszej modlitwy.', '2025-02-10 09:12:44', 0);
+(32, NULL, 14, NULL, 'Przypomnienei: Nie odmówiłeś jeszcze dzisiejszej modlitwy.', '2025-02-10 09:12:44', 0),
+(33, NULL, 3, NULL, 'Przypomnienie: Czas na modlitwę!', '2025-02-11 20:46:59', 1);
 
 -- --------------------------------------------------------
 
@@ -203,7 +204,7 @@ CREATE TABLE `mystery_change_task` (
 --
 
 INSERT INTO `mystery_change_task` (`id`, `group_id`, `intention_id`, `state`, `event_date`, `calendar_event_id`) VALUES
-(15, 1, 8, 'PENDING', '2025-02-25 18:00:00', 15);
+(15, 1, 8, 'PENDING', '2025-03-02 18:00:00', 15);
 
 -- --------------------------------------------------------
 
@@ -277,7 +278,7 @@ INSERT INTO `prayer_status` (`id`, `user_id`, `status`, `prayer_date`, `prayer_r
 CREATE TABLE `rosary_group` (
   `id` bigint(20) NOT NULL,
   `name` varchar(100) NOT NULL,
-  `leader_id` bigint(20) NOT NULL,
+  `leader_id` bigint(20) DEFAULT NULL,
   `intention_id` bigint(20) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -287,7 +288,8 @@ CREATE TABLE `rosary_group` (
 
 INSERT INTO `rosary_group` (`id`, `name`, `leader_id`, `intention_id`) VALUES
 (1, 'Róża Świętej Teresy z Lisieux', 3, 2),
-(2, 'Róża Matki Bożej Fatimskiej', 1, 5);
+(2, 'Róża Matki Bożej Fatimskiej', 1, 5),
+(3, 'Róża Różańcowa św. Ojca Pio', 39, 2);
 
 -- --------------------------------------------------------
 
@@ -337,7 +339,8 @@ INSERT INTO `user` (`id`, `first_name`, `last_name`, `password`, `email`, `role`
 (34, 'Katarzyna', 'Kowalczyk', 'c1ddd7824190de22c5c4258f54083741772161f04cf83820e502d10a1a4c7b76', 'katarzyna.kowalczyk@example.com', 'Member', 1, 1, NULL),
 (35, 'Wojciech', 'Kozłowski', 'c1ddd7824190de22c5c4258f54083741772161f04cf83820e502d10a1a4c7b76', 'wojciech.kozlowski@example.com', 'Member', 1, 1, NULL),
 (36, 'Natalia', 'Pawlak', 'c1ddd7824190de22c5c4258f54083741772161f04cf83820e502d10a1a4c7b76', 'natalia.pawlak@example.com', 'Member', 1, 1, NULL),
-(38, 'Mariusz', 'Kowalski', '$2a$10$l/wrbgJdbbliLMGU1HtgYeOZpWMHmqyNytJRfl7uJwCGPvXxSjc5i', 'mariuszkowalski@mail.com', 'Member', 1, NULL, NULL);
+(38, 'Mariusz', 'Kowalski', '$2a$10$l/wrbgJdbbliLMGU1HtgYeOZpWMHmqyNytJRfl7uJwCGPvXxSjc5i', 'mariuszkowalski@mail.com', 'Member', 1, NULL, NULL),
+(39, 'Mariusz', 'Kamiński', '$2a$10$xMD7st4/lc7ScpD17qVYtuth.lffVdu3GtwD/hignOumvDsoWFpFu', 'mariuszkaminski@mail.com', 'Zelator', 1, 3, NULL);
 
 --
 -- Indeksy dla zrzutów tabel
@@ -435,7 +438,7 @@ ALTER TABLE `calendar_event`
 -- AUTO_INCREMENT for table `chat`
 --
 ALTER TABLE `chat`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=33;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=34;
 
 --
 -- AUTO_INCREMENT for table `intention`
@@ -477,13 +480,13 @@ ALTER TABLE `prayer_status`
 -- AUTO_INCREMENT for table `rosary_group`
 --
 ALTER TABLE `rosary_group`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `user`
 --
 ALTER TABLE `user`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=39;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=40;
 
 --
 -- Constraints for dumped tables
